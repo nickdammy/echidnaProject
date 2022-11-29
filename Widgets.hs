@@ -1,17 +1,17 @@
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+
 module Echidna.UI.Widgets where
 
 import Brick
-import Brick.AttrMap qualified as A
 import Brick.Widgets.Border
 import Brick.Widgets.Center
 import Control.Lens
 import Control.Monad.Reader (MonadReader)
 import Data.Has (Has(..))
 import Data.List (nub, intersperse, sortBy)
-import Data.Text qualified as T
 import Data.Version (showVersion)
-import Graphics.Vty qualified as V
-import Paths_echidna qualified (version)
 import Text.Printf (printf)
 import Text.Wrap
 import qualified Brick.AttrMap as A
@@ -81,7 +81,7 @@ summaryWidget c =
 
 failedFirst :: EchidnaTest -> EchidnaTest -> Ordering
 failedFirst t1 _ | didFailed t1 = LT
-                 | otherwise   = GT
+                 | otherwise   = GT 
 
 testsWidget :: (MonadReader x m, Has CampaignConf x, Has Names x, Has TxConf x)
             => [EchidnaTest] -> m (Widget())
@@ -93,10 +93,10 @@ testWidget etest =
  case etest ^. testType of
       Exploration           -> widget tsWidget "exploration" ""
       PropertyTest n _      -> widget tsWidget n ""
-      OptimizationTest n _  -> widget optWidget n "optimizing "
+      OptimizationTest n _  -> widget optWidget n "optimizing " 
       AssertionTest _ s _   -> widget tsWidget (encodeSig s) "assertion in "
       CallTest n _          -> widget tsWidget n ""
-
+ 
   where
   widget f n infront = do
     (status, details) <- f (etest ^. testState) etest
@@ -124,10 +124,7 @@ titleWidget :: Widget n
 titleWidget = withAttr "title" $ str " team 6 Testing Call sequence" <+> str ContractName
 
 eventWidget :: Events -> Widget n
-eventWidget es =
-  if null es then str ""
-  else str "Event sequence" <+> str ":"
-       <=> strWrapWith wrapSettings (T.unpack $ T.intercalate "\n" es)
+eventWidget es = if null es then str "" else str "Event sequence" <+> str ":" <=> str (T.unpack $ T.intercalate "\n" es)
 
 failWidget :: (MonadReader x m, Has Names x, Has TxConf x)
            => Maybe (Int, Int) -> [Tx] -> Events -> TestValue -> TxResult -> m (Widget (), Widget ())
@@ -174,7 +171,6 @@ seqWidget xs = do
     let ordinals = str . printf "%d." <$> [1 :: Int ..]
     pure $
       foldl (<=>) emptyWidget $
-        zipWith (<+>) ordinals (withAttr "tx" . strWrapWith wrapSettings <$> ppTxs)
         zipWith (<+>) ordinals (withAttr "failure" . strWrapWith wrapSettings <$> ppTxs)
 
 failureBadge :: Widget ()
